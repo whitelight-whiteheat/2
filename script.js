@@ -73,6 +73,7 @@ class TaskManager {
             const taskElement = document.createElement('li');
             taskElement.className = 'task-item';
             taskElement.dataset.taskId = task.id;
+            taskElement.draggable = true;
             
             taskElement.innerHTML = `
                 <label class="checkbox-container">
@@ -99,7 +100,10 @@ class TaskManager {
                         </div>
                     ` : ''}
                 </div>
-                <button class="delete-task">
+                <button class="edit-task" title="Edit task">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-task" title="Delete task">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
@@ -166,7 +170,10 @@ class TaskManager {
                         </div>
                     ` : ''}
                 </div>
-                <button class="delete-task">
+                <button class="edit-task" title="Edit task">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-task" title="Delete task">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
@@ -234,7 +241,10 @@ class TaskManager {
                                     }).join('')}
                                 </div>
                             </div>
-                            <button class="delete-task">
+                            <button class="edit-task" title="Edit task">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-task" title="Delete task">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </li>
@@ -320,7 +330,10 @@ class TaskManager {
                                 </div>
                                     ` : ''}
                                 </div>
-                            <button class="delete-task">
+                            <button class="edit-task" title="Edit task">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-task" title="Delete task">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </li>
@@ -560,6 +573,76 @@ class TaskManager {
                 }
             });
         }
+
+        // Edit task
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.edit-task')) {
+                const taskItem = e.target.closest('.task-item');
+                const taskId = parseInt(taskItem.dataset.taskId);
+                const task = this.tasks.find(t => t.id === taskId);
+                
+                if (task) {
+                    // Get the task modal
+                    const taskModal = document.getElementById('task-modal');
+                    
+                    // Fill the form with task data
+                    document.getElementById('task-title').value = task.title;
+                    document.getElementById('task-description').value = task.description || '';
+                    document.getElementById('task-date').value = task.dueDate || '';
+                    document.getElementById('task-tags').value = task.tags ? task.tags.join(', ') : '';
+                    
+                    // Show the modal
+                    taskModal.style.display = 'block';
+                }
+            }
+        });
+
+        // Add drag and drop handlers
+        document.addEventListener('dragstart', (e) => {
+            const taskItem = e.target.closest('.task-item');
+            if (taskItem) {
+                taskItem.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', taskItem.dataset.taskId);
+            }
+        });
+
+        document.addEventListener('dragend', (e) => {
+            const taskItem = e.target.closest('.task-item');
+            if (taskItem) {
+                taskItem.classList.remove('dragging');
+            }
+        });
+
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault(); // This is crucial to allow dropping
+            const tasksList = e.target.closest('.tasks-list');
+            if (!tasksList) return;
+
+            const draggingItem = document.querySelector('.task-item.dragging');
+            if (!draggingItem) return;
+
+            // Find the task item we're dragging over
+            const closestTask = this.getDragAfterElement(tasksList, e.clientY);
+            if (closestTask) {
+                tasksList.insertBefore(draggingItem, closestTask);
+            } else {
+                tasksList.appendChild(draggingItem);
+            }
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const tasksList = e.target.closest('.tasks-list');
+            if (!tasksList) return;
+
+            // Update the tasks array to match the new order
+            const newOrder = [...tasksList.querySelectorAll('.task-item')].map(item => 
+                this.tasks.find(task => task.id === parseInt(item.dataset.taskId))
+            ).filter(Boolean);
+
+            this.tasks = newOrder;
+            this.saveTasks();
+        });
     }
 
     // Make tags clickable
@@ -667,6 +750,22 @@ class TaskManager {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             dateDisplay.textContent = new Date().toLocaleDateString(undefined, options);
         }
+    }
+
+    // Add this helper function to the TaskManager class
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.task-item:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 }
 
