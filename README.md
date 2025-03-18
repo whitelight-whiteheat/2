@@ -1,16 +1,76 @@
- A fast and flexible web-based todo list app. No account required.
- 
-🏷️ Todo Properties
-Create todo with 4 properties: Name, Date, Priority and Tag. Press Enter to add it to list. Click the circle to mark it as done.
+# Task Management Application
 
-🗂️ Multiple Lists
-Create multiple lists for different purposes: daily todo list, long-term goal list or even project feature list.
+A modern, responsive task management application with a clean and intuitive interface. Features include task creation, organization, calendar view, and theme customization.
 
-🗓️ Calendar View
-View your todos with calendar. The date with todos is highlighted. Click on each date to only show the todos on that day.
+## Features
 
-🗃️ Sorter
-Sort your todos with the 4 properties. You can also use it under calendar view.
+- 📝 Task creation and management
+- 📅 Calendar view for task scheduling
+- 🌓 Light/Dark theme toggle
+- 📱 Responsive design
+- 💾 Persistent data storage
+- 🎨 Modern UI with smooth animations
+- 📊 Task organization and filtering
 
-💾 Local Data Saving
-Your data will be stored on your device locally and not persisted in any database.
+## Technologies Used
+
+- HTML5
+- CSS3 (with CSS Variables for theming)
+- JavaScript (Vanilla)
+- LocalStorage for data persistence
+- Font Awesome for icons
+
+## Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/task-management-app.git
+```
+
+2. Navigate to the project directory:
+```bash
+cd task-management-app
+```
+
+3. Open `index.html` in your web browser or use a local server.
+
+## Usage
+
+1. **Creating Tasks**:
+   - Click the "Add Task" button
+   - Fill in task details
+   - Click "Save Task"
+
+2. **Managing Tasks**:
+   - View tasks in the main dashboard
+   - Use the calendar view for date-based organization
+   - Edit or delete tasks as needed
+
+3. **Customization**:
+   - Toggle between light and dark themes
+   - Collapse/expand the sidebar
+   - Organize tasks using tags and categories
+
+## Project Structure
+
+```
+task-management-app/
+├── index.html
+├── calendarview.html
+├── styles.css
+├── theme.js
+├── calendar.js
+└── README.md
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

@@ -56,12 +56,12 @@ class TaskManager {
         const activeTasks = this.tasks.filter(task => !task.completed);
 
         if (activeTasks.length === 0) {
-                tasksList.innerHTML = `
-                    <li class="empty-state">
-                        <i class="fas fa-check"></i>
-                        No tasks scheduled for today
-                    </li>
-                `;
+            tasksList.innerHTML = `
+                <li class="empty-state">
+                    <i class="fas fa-check"></i>
+                    No tasks scheduled for today
+                </li>
+            `;
             return;
         }
 
@@ -80,12 +80,12 @@ class TaskManager {
                     <input type="checkbox" ${task.completed ? 'checked' : ''}>
                     <span class="checkmark"></span>
                 </label>
-                        <div class="task-content">
+                <div class="task-content">
                     <div class="task-title">${task.title}</div>
                     ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                     ${task.dueDate ? `
                         <div class="task-metadata">
-                            <span class="task-date">
+                            <span class="task-date clickable" data-date="${task.dueDate}">
                                 <i class="fas fa-calendar"></i> ${new Date(task.dueDate).toLocaleDateString()}
                             </span>
                         </div>
@@ -93,7 +93,6 @@ class TaskManager {
                     ${task.tags && task.tags.length > 0 ? `
                         <div class="task-tags">
                             ${task.tags.map(tag => {
-                                // Get a color number based on the first character of the tag
                                 const colorNum = tag.charCodeAt(0) % 10;
                                 return `<span class="tag" data-color="${colorNum}">${tag}</span>`;
                             }).join('')}
@@ -116,6 +115,7 @@ class TaskManager {
         
         // After adding tasks to the DOM
         this.makeTagsClickable();
+        this.makeDatesClickable();
     }
     
     // Display completed tasks on the completed page
@@ -395,7 +395,14 @@ class TaskManager {
 
         if (quickAddBtn) {
             quickAddBtn.addEventListener('click', () => {
-                taskModal.style.display = 'block';
+                // Reset the form
+                document.getElementById('task-form').reset();
+                document.getElementById('task-id').value = '';
+                document.getElementById('modal-title').innerHTML = '<i class="fas fa-plus"></i> Create New Task';
+                document.getElementById('form-submit-btn').textContent = 'Create Task';
+                
+                // Show the modal
+                document.getElementById('task-modal').style.display = 'block';
             });
         }
 
@@ -415,33 +422,58 @@ class TaskManager {
             taskForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
-                const title = document.getElementById('task-title').value.trim();
-                if (!title) return;
+                const taskId = document.getElementById('task-id').value;
+                const title = document.getElementById('task-title').value;
+                const description = document.getElementById('task-description').value;
+                const dueDate = document.getElementById('task-date').value;
+                const tagsInput = document.getElementById('task-tags').value;
+                const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()) : [];
                 
-                // Create a simple task
-                const task = {
-                    id: Date.now(),
-                    title: title,
-                    description: document.getElementById('task-description').value.trim(),
-                    dueDate: document.getElementById('task-date').value || new Date().toISOString().split('T')[0],
-                    tags: document.getElementById('task-tags').value ? 
-                          document.getElementById('task-tags').value.split(',').map(tag => tag.trim()) : 
-                          [],
-                    completed: false
-                };
+                if (taskId) {
+                    // Update existing task
+                    const index = this.tasks.findIndex(t => t.id === parseInt(taskId));
+                    if (index !== -1) {
+                        this.tasks[index].title = title;
+                        this.tasks[index].description = description;
+                        this.tasks[index].dueDate = dueDate;
+                        this.tasks[index].tags = tags;
+                        
+                        this.saveTasks();
+                        this.showNotification('Task updated successfully');
+                    }
+                } else {
+                    // Create new task
+                    const newTask = {
+                        id: Date.now(),
+                        title,
+                        description,
+                        dueDate,
+                        tags,
+                        completed: false
+                    };
+                    
+                    this.tasks.push(newTask);
+                    this.saveTasks();
+                    this.showNotification('Task created successfully');
+                }
                 
-                // Add to array
-                this.tasks.push(task);
+                // Reset form and close modal
+                taskForm.reset();
+                document.getElementById('task-id').value = '';
+                document.getElementById('modal-title').innerHTML = '<i class="fas fa-plus"></i> Create New Task';
+                document.getElementById('form-submit-btn').textContent = 'Create Task';
+                document.getElementById('task-modal').style.display = 'none';
                 
-                // Save to localStorage
-                this.saveTasks();
-                
-                // Update display
-                this.displayTasks();
-                
-                // Close modal and reset form
-                    taskModal.style.display = 'none';
-                    taskForm.reset();
+                // Update the appropriate display
+                if (window.location.pathname.includes('completed.html')) {
+                    this.displayCompletedTasks();
+                } else if (window.location.pathname.includes('tagfilter.html')) {
+                    this.displayTagFilterPage();
+                } else if (window.location.pathname.includes('upcoming.html')) {
+                    this.displayUpcomingTasks();
+                } else {
+                    this.displayTasks();
+                }
             });
         }
 
@@ -531,19 +563,16 @@ class TaskManager {
         const appContainer = document.querySelector('.app-container');
         
         if (sidebarToggle && appContainer) {
+            // Check localStorage for saved sidebar state
+            const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isSidebarCollapsed) {
+                appContainer.classList.add('sidebar-collapsed');
+            }
+
             sidebarToggle.addEventListener('click', () => {
                 appContainer.classList.toggle('sidebar-collapsed');
-                
-                const icon = sidebarToggle.querySelector('i');
-                if (icon) {
-                    if (appContainer.classList.contains('sidebar-collapsed')) {
-                        icon.classList.remove('fa-chevron-left');
-                        icon.classList.add('fa-chevron-right');
-                    } else {
-                        icon.classList.remove('fa-chevron-right');
-                        icon.classList.add('fa-chevron-left');
-                    }
-                }
+                // Save the new state to localStorage
+                localStorage.setItem('sidebarCollapsed', appContainer.classList.contains('sidebar-collapsed'));
             });
         }
 
@@ -586,10 +615,15 @@ class TaskManager {
                     const taskModal = document.getElementById('task-modal');
                     
                     // Fill the form with task data
+                    document.getElementById('task-id').value = task.id;
                     document.getElementById('task-title').value = task.title;
                     document.getElementById('task-description').value = task.description || '';
                     document.getElementById('task-date').value = task.dueDate || '';
                     document.getElementById('task-tags').value = task.tags ? task.tags.join(', ') : '';
+                    
+                    // Update modal title and button text to indicate editing
+                    document.getElementById('modal-title').innerHTML = '<i class="fas fa-edit"></i> Edit Task';
+                    document.getElementById('form-submit-btn').textContent = 'Update Task';
                     
                     // Show the modal
                     taskModal.style.display = 'block';
@@ -697,15 +731,41 @@ class TaskManager {
         }, 3000);
     }
 
-    // Initialize calendar
-    initializeCalendar() {
+    // Make dates clickable
+    makeDatesClickable() {
+        const dateElements = document.querySelectorAll('.task-date.clickable');
+        dateElements.forEach(dateElement => {
+            dateElement.style.cursor = 'pointer';
+            dateElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const date = dateElement.dataset.date;
+                window.location.href = `calendarview.html?date=${date}`;
+            });
+        });
+    }
+
+    // Show calendar for specific date
+    showCalendarForDate(date) {
+        const calendarModal = document.getElementById('calendar-modal');
+        if (!calendarModal) return;
+
+        // Show the modal
+        calendarModal.style.display = 'block';
+        
+        // Initialize calendar with the specific date
+        this.initializeCalendar(new Date(date));
+    }
+
+    // Initialize calendar with optional specific date
+    initializeCalendar(specificDate = null) {
         const calendarMonthYear = document.getElementById('calendar-month-year');
         const calendarDays = document.getElementById('calendar-days');
+        const selectedDate = document.getElementById('selected-date');
         
         if (!calendarMonthYear || !calendarDays) return;
         
-        // Get current date
-        const now = new Date();
+        // Get current date or use specific date
+        const now = specificDate || new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
         
@@ -732,15 +792,124 @@ class TaskManager {
         for (let i = 1; i <= daysInMonth; i++) {
             const dayElement = document.createElement('div');
             dayElement.className = 'calendar-day';
-            dayElement.textContent = i;
+            
+            // Create date string for this day
+            const currentDate = new Date(currentYear, currentMonth, i);
+            const dateString = currentDate.toISOString().split('T')[0];
+            
+            // Add the day number
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = i;
+            dayElement.appendChild(dayNumber);
+            
+            // Check if there are tasks for this day
+            const tasksForDay = this.tasks.filter(task => 
+                task.dueDate && task.dueDate.split('T')[0] === dateString
+            );
+            
+            // Add task previews if there are tasks
+            if (tasksForDay.length > 0) {
+                const tasksContainer = document.createElement('div');
+                tasksContainer.className = 'day-tasks';
+                
+                // Show up to 3 tasks
+                tasksForDay.slice(0, 3).forEach(task => {
+                    const taskPreview = document.createElement('div');
+                    taskPreview.className = 'task-preview';
+                    taskPreview.innerHTML = `
+                        <span class="task-dot"></span>
+                        <span class="task-title">${task.title}</span>
+                    `;
+                    tasksContainer.appendChild(taskPreview);
+                });
+                
+                // If there are more than 3 tasks, show a count
+                if (tasksForDay.length > 3) {
+                    const moreTasks = document.createElement('div');
+                    moreTasks.className = 'more-tasks';
+                    moreTasks.textContent = `+${tasksForDay.length - 3} more`;
+                    tasksContainer.appendChild(moreTasks);
+                }
+                
+                dayElement.appendChild(tasksContainer);
+            }
             
             // Highlight current day
             if (i === now.getDate() && currentMonth === now.getMonth() && currentYear === now.getFullYear()) {
                 dayElement.classList.add('current-day');
             }
             
+            // Add click handler for the day
+            dayElement.addEventListener('click', () => {
+                this.showTasksForDate(dateString);
+            });
+            
             calendarDays.appendChild(dayElement);
         }
+    }
+
+    // Show tasks for a specific date
+    showTasksForDate(dateString) {
+        const dateTasksList = document.getElementById('date-tasks-list');
+        const selectedDate = document.getElementById('selected-date');
+        
+        if (!dateTasksList || !selectedDate) return;
+        
+        // Format the date for display
+        const date = new Date(dateString);
+        selectedDate.textContent = date.toLocaleDateString(undefined, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Get tasks for this date
+        const tasksForDay = this.tasks.filter(task => 
+            task.dueDate && task.dueDate.split('T')[0] === dateString
+        );
+        
+        if (tasksForDay.length === 0) {
+            dateTasksList.innerHTML = `
+                <li class="empty-state">
+                    <i class="fas fa-calendar"></i>
+                    No tasks scheduled for this day
+                </li>
+            `;
+            return;
+        }
+        
+        // Display tasks
+        dateTasksList.innerHTML = tasksForDay.map(task => `
+            <li class="task-item" data-task-id="${task.id}">
+                <label class="checkbox-container">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''}>
+                    <span class="checkmark"></span>
+                </label>
+                <div class="task-content">
+                    <div class="task-title">${task.title}</div>
+                    ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                    ${task.tags && task.tags.length > 0 ? `
+                        <div class="task-tags">
+                            ${task.tags.map(tag => {
+                                const colorNum = tag.charCodeAt(0) % 10;
+                                return `<span class="tag" data-color="${colorNum}">${tag}</span>`;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+                <button class="edit-task" title="Edit task">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-task" title="Delete task">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </li>
+        `).join('');
+        
+        // Make tags clickable in the calendar view
+        this.makeTagsClickable();
     }
 
     // Update date display
@@ -766,6 +935,95 @@ class TaskManager {
                 return closest;
             }
         }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    createTaskElement(task) {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+        li.dataset.id = task.id;
+
+        const taskContent = document.createElement('div');
+        taskContent.className = 'task-content';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'task-checkbox';
+        checkbox.checked = task.completed;
+        checkbox.addEventListener('change', () => this.toggleTaskCompletion(task.id));
+
+        const taskDetails = document.createElement('div');
+        taskDetails.className = 'task-details';
+
+        const title = document.createElement('h3');
+        title.className = 'task-title';
+        title.textContent = task.title;
+
+        const metadata = document.createElement('div');
+        metadata.className = 'task-metadata';
+
+        if (task.date) {
+            const date = document.createElement('span');
+            date.className = 'task-date clickable';
+            date.innerHTML = `<i class="fas fa-calendar"></i> ${task.date}`;
+            date.dataset.date = task.date;
+            date.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.location.href = `calendarview.html?date=${task.date}`;
+            });
+            metadata.appendChild(date);
+        }
+
+        if (task.tags && task.tags.length > 0) {
+            const tags = document.createElement('div');
+            tags.className = 'task-tags';
+            task.tags.forEach(tag => {
+                const tagSpan = document.createElement('span');
+                tagSpan.className = 'task-tag';
+                tagSpan.textContent = tag;
+                tags.appendChild(tagSpan);
+            });
+            metadata.appendChild(tags);
+        }
+
+        if (task.description) {
+            const description = document.createElement('p');
+            description.className = 'task-description';
+            description.textContent = task.description;
+            taskDetails.appendChild(description);
+        }
+
+        taskDetails.appendChild(title);
+        taskDetails.appendChild(metadata);
+
+        taskContent.appendChild(checkbox);
+        taskContent.appendChild(taskDetails);
+
+        const actions = document.createElement('div');
+        actions.className = 'task-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'task-action-btn';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.editTask(task);
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'task-action-btn delete';
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteTask(task.id);
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        li.appendChild(taskContent);
+        li.appendChild(actions);
+
+        return li;
     }
 }
 

@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2DU - Completed Tasks</title>
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>2DU - Completed</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="theme.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -22,7 +25,7 @@
             </div>
             <nav>
                 <a href="index.html" data-tooltip="Today"><i class="fas fa-inbox"></i> <span>Today</span></a>
-                <a href="#" id="calendar-link" data-tooltip="Calendar"><i class="fas fa-calendar-alt"></i> <span>Calendar</span></a>
+                <a href="calendarview.html" data-tooltip="Calendar"><i class="fas fa-calendar"></i> <span>Calendar</span></a>
                 <a href="upcoming.html" data-tooltip="Upcoming"><i class="fas fa-calendar"></i> <span>Upcoming</span></a>
                 <a href="completed.html" class="active" data-tooltip="Completed"><i class="fas fa-check-circle"></i> <span>Completed</span></a>
                 <a href="search.html" data-tooltip="Search"><i class="fas fa-search"></i> <span>Search</span></a>
@@ -32,6 +35,11 @@
         </aside>
 
         <div class="main-content">
+            <div class="theme-toggle-container">
+                <button id="theme-toggle" class="theme-toggle" title="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
             <main>
                 <section id="completed-section">
                     <div class="dashboard-header">
@@ -51,37 +59,6 @@
             <footer>
                 <p>&copy; 2025 2DU. All rights reserved.</p>
             </footer>
-        </div>
-    </div>
-
-    <!-- Calendar Modal -->
-    <div id="calendar-modal" class="modal">
-        <div class="modal-content calendar-modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-calendar-alt"></i> Calendar View</h2>
-                <button class="close-modal" title="Close modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <button id="prev-month" class="calendar-nav-btn" title="Previous month"><i class="fas fa-chevron-left"></i></button>
-                    <h3 id="calendar-month-year"></h3>
-                    <button id="next-month" class="calendar-nav-btn" title="Next month"><i class="fas fa-chevron-right"></i></button>
-                </div>
-                <div class="calendar-weekdays">
-                    <span>Sun</span>
-                    <span>Mon</span>
-                    <span>Tue</span>
-                    <span>Wed</span>
-                    <span>Thu</span>
-                    <span>Fri</span>
-                    <span>Sat</span>
-                </div>
-                <div id="calendar-days" class="calendar-days"></div>
-                <div id="calendar-tasks" class="calendar-tasks">
-                    <h4>Tasks for <span id="selected-date"></span></h4>
-                    <ul id="date-tasks-list"></ul>
-                </div>
-            </div>
         </div>
     </div>
 </body>

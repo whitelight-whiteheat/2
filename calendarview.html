@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>2DU - Calendar View</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="theme.js"></script>
+    <script src="script.js"></script>
+    <script src="calendar.js" defer></script>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <button class="sidebar-toggle">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="logo-container">
+                <a href="index.html" class="logo-link">
+                    <h1>2DU</h1>
+                    <span class="logo-subtitle">...or not 2DU</span>
+                </a>
+            </div>
+            <nav>
+                <a href="index.html" data-tooltip="Today">
+                    <i class="fas fa-inbox"></i>
+                    <span>Today</span>
+                </a>
+                <a href="calendarview.html" class="active" data-tooltip="Calendar">
+                    <i class="fas fa-calendar"></i>
+                    <span>Calendar</span>
+                </a>
+                <a href="upcoming.html" data-tooltip="Upcoming">
+                    <i class="fas fa-clock"></i>
+                    <span>Upcoming</span>
+                </a>
+                <a href="completed.html" data-tooltip="Completed">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed</span>
+                </a>
+                <a href="search.html" data-tooltip="Search">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </a>
+                <a href="tagfilter.html" data-tooltip="Tags">
+                    <i class="fas fa-tags"></i>
+                    <span>Tags</span>
+                </a>
+                <a href="projects.html" data-tooltip="Projects">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Projects</span>
+                </a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <div class="theme-toggle-container">
+                <button id="theme-toggle" class="theme-toggle" title="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <div class="calendar-modal-content">
+                <div class="calendar-container">
+                    <div class="calendar-main">
+                        <div class="calendar-header">
+                            <div class="calendar-nav">
+                                <button class="calendar-nav-btn" id="prevMonth">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <h2 id="currentMonth">Month Year</h2>
+                                <button class="calendar-nav-btn" id="nextMonth">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <span>Sun</span>
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                        </div>
+                        <div class="calendar-days" id="calendarDays">
+                            <!-- Calendar days will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="calendar-tasks">
+                        <h3>Tasks for <span id="selectedDate">Selected Date</span></h3>
+                        <div class="selected-date-tasks" id="selectedDateTasks">
+                            <!-- Tasks for selected date will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
